@@ -1,2 +1,5 @@
 # govinda-pingali
-Portfolio website, running on Heroku
+Portfolio website
+
+PHP app, deployed on Heroku
+Using [Silex](http://silex.sensiolabs.org/) web framework.
