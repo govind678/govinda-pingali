@@ -1,0 +1,156 @@
+#projects
+{
+    background-color: #514C49;
+}
+
+#content-container
+{
+    height: 520px;
+}
+
+
+    #projects-nav
+    {
+        position: relative;
+        float: left;
+        height: 100%;
+        width: 30%;
+        background:rgba(58, 53, 50, 0.75);
+    }
+
+    .project-grouping
+    {
+        position: relative;
+        color: #AAAAAA;
+        top: 10px;
+        left: 10px;
+        font-size: 18px;
+        font-weight: bold;
+    }
+    
+    .project-listing
+    {
+        position: relative;
+        font-size: 20px;
+        left: 10px;
+        font-weight: normal;
+        color: #222222;
+        top: 10px;
+        left: 40px;
+    }
+    
+    ul
+    {
+        list-style-type: none;
+        padding: 0px;
+        margin: 0px;
+    }
+    
+    ul:hover
+    {
+        cursor: pointer;
+    }
+    
+    ul li
+    {
+        background-image: url(../images/arrow.png);
+        background-repeat: no-repeat;
+        background-size: 15px 15px;
+        background-position: 0px 5px;
+        padding-left: 25px;
+        text-decoration: none;
+    }
+    
+    ui li:hover
+    {
+        cursor: pointer;
+    }
+    
+    #gtcmt-div
+    {
+        position: relative;
+        top: 10px;
+    }
+    
+    #gtcmt
+    {
+        position: relative;
+        top: 15px;
+    }
+    
+    #rvce-div
+    {
+        position: relative;
+        top: 40px;
+    }
+    
+    #rvce
+    {
+        position: relative;
+        top: 45px;
+    }
+    
+    
+    #projects-content
+    {
+        position: relative;
+        float: right;
+        height: 100%;
+        width: 70%;
+        background:rgba(158, 153, 150, 0.6);
+        color: #222222;
+    }
+    
+    .project-info
+    {
+        position: relative;
+        margin: 0 auto;
+        width: 96%;
+        height: 94%;
+        top: 14px;
+    }
+
+    .project-title
+    {
+        color: #222222;
+        font-size: 20px;
+        font-weight: bold
+    }
+    
+    .project-text
+    {
+        color: #333333;
+        font-size: 16px;
+    }
+    
+    
+    #link1
+    {
+        
+    }
+    
+    #link2
+    {
+        
+    }
+    
+    #link3
+    {
+        
+    }
+    
+    #link4
+    {
+        
+    }
+    
+    #link5
+    {
+        
+    }
+
+
+#footer
+{
+    top: 95px;
+}

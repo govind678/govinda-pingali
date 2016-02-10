@@ -1,0 +1,75 @@
+#music
+{
+    background-color: #514C49;
+}
+
+
+#content-container
+{
+    background:rgba(40, 37, 36, 0.7);
+    height: 690px;
+}
+
+
+#soundcloud
+{
+    position: relative;
+    margin: 0 auto;
+    width: 100%;
+    height: 100%;
+}
+
+    .song
+    {
+        position: relative;
+        width: 30%;
+        height: 300px;
+    }
+    
+    
+    #link1
+    {
+        float: left;
+        left: 30px;
+        top: 30px;
+    }
+    
+    #link2
+    {
+        float: left;
+        left: 60px;
+        top: 30px;
+    }
+    
+    #link3
+    {
+        float: right;
+        right: 30px;
+        top: 30px;
+    }
+
+    #link4
+    {
+        float: left;
+        left: 30px;
+        top: 60px;
+    }
+    
+    #link5
+    {
+        float: left;
+        left: 60px;
+        top: 60px;
+    }
+    
+    #link6
+    {
+        float: right;
+        right: 30px;
+        top: 60px;
+    }
+
+#footer
+{
+    top: 75px;
+}

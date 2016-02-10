@@ -1,0 +1,72 @@
+#contact
+{
+    background-color: #514C49;
+}
+
+
+#content-container
+{
+    height: 300px;
+    background:rgba(40, 37, 36, 0.0);
+}
+
+
+#address
+{
+    position: relative;
+    float: left;
+    background-color: rgba(132, 122, 115, 0.7);
+    width: 20%;
+    height: 130px;
+    left: 300px;
+    top: 20px;
+}
+
+
+#relevant-links
+{
+    position: relative;
+    float: right;
+    background-color: rgba(128, 122, 115, 0.5);
+    width: 20%;
+    height: 130px;
+    right: 300px;
+    top: 20px;
+}
+
+
+    #github
+    {
+        position: relative;
+        float: left;
+        width: 60px;
+        height: 60px;
+        left: 10px;
+        top: 10px;
+    }
+    
+    
+    #linkedin
+    {
+        position: relative;
+        float: left;
+        width: 60px;
+        height: 60px;
+        left: 30px;
+        top: 10px;
+    }
+    
+    #soundcloud
+    {
+        position: relative;
+        float: right;
+        width: 60px;
+        height: 60px;
+        right: 10px;
+        top: 10px;
+    }
+
+#footer
+{
+    top: 315px;
+}

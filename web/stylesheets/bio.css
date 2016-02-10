@@ -1,0 +1,36 @@
+#bio
+{
+    background-color: #514C49;
+}
+
+
+#content-container
+{
+    height: 400px;
+    background:rgba(40, 37, 36, 0.7);
+}
+
+
+    #profile
+    {
+        position: relative;
+        float: left;
+        top: 20px;
+        left: 20px;
+        height: 300px;
+        width: 300px;
+        opacity: 0.8;
+    }
+    
+    #bio-content
+    {
+        position: relative;
+        float: left;
+        left: 40px;
+        top: 20px;
+    }
+
+#footer
+{
+    top: 215px;
+}
