@@ -56,7 +56,7 @@
             <div id="bio-content">
                 <p style="color: #AAAAAA; font-size: 16px; ">
                 I'm Govinda, a gradute student in Music Technology at Georgia Institute of Technology, Atlanta, GA.<br>
-                My research interests include designing and building interfaces for musical expression, audio content analysis and <br>audio signal processing.
+                My research interests include designing and building interactive interfaces, wearable technology, machine listening and audio signal processing.
                 <br><br>
                 I did my undergraduate studies in Instrumentation Technology at RV College of Engineering, Bangalore, India.
                 <br><br>
