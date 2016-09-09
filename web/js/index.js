@@ -1,41 +1,60 @@
 //--------------------------------------------------------------------
 // Parameters
 //--------------------------------------------------------------------
-var _toggleAnimation = false;
+var _animationToggle 			= false;
+var _animationStartTime 		= 2000;	// ms
 
-var _squareSize = 128;
-var _zIncrement = 0.1;
-var _zMax = 45;
-var _rotationIncrement = 0.05;	// degrees 0.05
-var _rotationDirection = 1;
-var _alphaStart = 0.0;
-var _alphaEnd = 1.0;
-var _alphaIncrement = 0.001;
+var _fpsDefault 				= 60.0;
+var _fpsRates					= [60.0, 30.0, 15.0];
+var _fpsAnimation 				= 60.0;	// Throttle if _fpsAnimation < _fpsDefault
+
+var _animationRateIncrement 	= 0.05;
+var _animationRateMax			= 1.2;
+var _animationRateMin 			= 0.05;
+var _animationRate 				= 0.05;
+
+var _squareSize 				= 128;
+var _zIncrement 				= 0.1;
+var _zMax 						= 45;
+var _rotationDirection 			= 1;
+var _alphaStart 				= 0.0;
+var _alphaEnd 					= 1.0;
+var _alphaIncrement 			= 0.001;
 
 
 //--------------------------------------------------------------------
 // Local Variables
 //--------------------------------------------------------------------
-var m_zOffset = 0.0;
-var m_zIncrementToggle = true;
-var m_zDirection = -1;
-var m_zDirectionToggle = false;
+var m_fpsCurrentTime 			= 0.0;
+var m_fpsInterval 				= 0.0;
+var m_fpsPreviousTime 			= 0.0;
+var m_fpsElapsedTime 			= 0.0;
+var m_fpsCurrentRateIndex		= 0;
 
-var m_rotation = 0;	// degrees
+var m_zOffsetCurrent			= 0.0;
+var m_zIncrementToggle 			= true;
+var m_zOffsetPrevious			= m_zIncrementToggle ? 0.1 : -0.1;
+var m_zDirection 				= -1;
+var m_zDirectionToggle 			= false;
 
-var m_alphaCube = 0.8;
-var m_alphaCircle = 0.2;
-var m_alphaToggle = false;
+var m_rotation 					= 0;	// degrees
+var m_rotationIncrement			= 0.0;	// degrees
+var m_alphaCube 				= 0.8;
+var m_alphaCircle 				= 0.2;
+var m_alphaToggle 				= false;
 
-var m_dimStep = 0;
-var m_dimTotal = 3;
-var m_nRows = 4;
-var m_nColumns = 4;
-var m_nPages = 1;
+var m_dimStep 					= 0;
+var m_dimStepToggle				= false;
+var m_dimTotal 					= 8;
+var m_nRows 					= 4;
+var m_nColumns 					= 4;
+var m_nPages 					= 1;
+
+var m_helperDiv;
+var m_helperToggle 				= false;
 
 var m_requestID;
-
-// var	m_mousePosition = [0.0, 0.0];
+var	m_mousePosition 			= [0.0, 0.0];
 
 
 
@@ -63,8 +82,8 @@ function initialize() {
    	// Set Window Size and Draw
    	resized();
 
-   	// Start Animating after 5 seconds
-   	window.setTimeout(startAnimation, 5000);
+   	// Start Animating after n seconds
+   	window.setTimeout(startAnimation, _animationStartTime);
 }
 
 
@@ -76,32 +95,46 @@ function resized() {
 	backgroundCanvas.width = window.innerWidth; // 1440
  	backgroundCanvas.height = window.innerHeight; // 752
 
+ 	var backgroundHighlight = document.getElementById("backgroundHighlight");
+	backgroundHighlight.width = window.innerWidth; // 1440
+ 	backgroundHighlight.height = window.innerHeight; // 752
+
 	var cubeCanvas = document.getElementById("cubeCanvas");
-	cubeCanvas.width = window.innerWidth; // 1440
- 	cubeCanvas.height = window.innerHeight; // 752
+	cubeCanvas.width = window.innerWidth;
+ 	cubeCanvas.height = window.innerHeight;
 
  	var circleCanvas = document.getElementById("circleCanvas");
-	circleCanvas.width = window.innerWidth; // 1440
- 	circleCanvas.height = window.innerHeight; // 752
+	circleCanvas.width = window.innerWidth;
+ 	circleCanvas.height = window.innerHeight;
 
- 	_squareSize = (Math.min(backgroundCanvas.height / 6.0, backgroundCanvas.width / 6.0));
- 	_zMax = 0.5 * _squareSize;
- 	_zIncrement = _zMax * 1.0 * _rotationIncrement / 45.0;
+	m_fpsPreviousTime = performance.now();
 
+	calculateParameters();
  	reset();
- 	
 
- 	if (!_toggleAnimation) {
+ 	if (!_animationToggle) {
  		redraw();
  	} else {
  		tick();
  	}
 }
 
+
 function reset() {
-	m_zOffset = 0.0;
-    m_rotation = 0.0;
+	m_zOffsetCurrent 	= 0.0;
+    m_rotation 			= 0.0;
 }
+
+
+function calculateParameters() {
+	m_fpsInterval = 1000.0 / _fpsAnimation;
+	m_rotationIncrement = (_animationRate * _fpsDefault) / _fpsAnimation;	// degrees (default 0.05 for 60fps)
+	_squareSize = Math.min(backgroundCanvas.height / 6.0, backgroundCanvas.width / 6.0);
+ 	_zMax = 0.5 * _squareSize;
+ 	_zIncrement = m_rotationIncrement * _zMax / 45.0;
+}
+
+
 
 
 //--------------------------------------------------------------------
@@ -109,12 +142,14 @@ function reset() {
 //--------------------------------------------------------------------
 
 function startAnimation() {
-	_toggleAnimation = true;
-	tick();
+	if (_animationToggle == false) {
+		_animationToggle = true;
+		tick();
+	}
 }
 
 function stopAnimation() {
-	_toggleAnimation = false;
+	_animationToggle = false;
 	window.cancelAnimationFrame(m_requestID);
 }
 
@@ -129,7 +164,7 @@ function redraw() {
 
 
 	var size = _squareSize;
-	var offset = m_zOffset;
+	var offset = m_zOffsetCurrent;
 
 	var nRows = m_nRows;
 	var nColumns = m_nColumns;
@@ -144,6 +179,7 @@ function redraw() {
 	var yPos = yOrigin;
 
 
+	// Set Unit Transform Matrix and Clear
 	cubeCtx.setTransform(1, 0, 0, 1, 0, 0);
 	cubeCtx.clearRect(0, 0, cubeCanvas.width, cubeCanvas.height);
 	circleCtx.setTransform(1, 0, 0, 1, 0, 0);
@@ -158,6 +194,7 @@ function redraw() {
 	// Move registration point back to the top left corner of canvas
 	cubeCtx.translate(-cubeCanvas.width/2, -cubeCanvas.height/2);
 	circleCtx.translate(-circleCanvas.width/2, -circleCanvas.height/2);
+
 
 	// Draw Unit Cubes
 	cubeCtx.beginPath();
@@ -174,6 +211,9 @@ function redraw() {
 		yPos += size;
 	}
 
+	cubeCtx.closePath();
+	circleCtx.closePath();
+
 	// Stroke
 	cubeCtx.strokeStyle = "#FFF";
 	cubeCtx.globalAlpha = m_alphaCube;
@@ -187,6 +227,8 @@ function redraw() {
 
 function drawUnitCube(cubeCtx, circleCtx, xOrigin, yOrigin, size, offset, direction) {
 	
+	var no_antiAliasing = false;		// Use round number pixels instead of floating-point pixel interpolation
+
 	var drawFrontCircles = true;
 	var drawTopCircles = true;
 	var drawSideCircles = true;
@@ -201,6 +243,16 @@ function drawUnitCube(cubeCtx, circleCtx, xOrigin, yOrigin, size, offset, direct
 		xOffset = -offset;
 		yOffset = offset;
 	} 
+
+
+	if (no_antiAliasing == true) {
+		xOrigin = ~~ (xOrigin+0.5);
+		yOrigin = ~~ (yOrigin+0.5);
+		size = ~~ (size+0.5);
+		xOffset = ~~ (xOffset+0.5);
+		yOffset = ~~ (yOffset+0.5);
+		offsetScaler = ~~ (offsetScaler+0.5);
+	}
 
 
 	// Draw Necker Cube
@@ -259,37 +311,58 @@ function drawUnitCube(cubeCtx, circleCtx, xOrigin, yOrigin, size, offset, direct
 
 function tick() {
 
-	if (m_zIncrementToggle == true) {
-		m_zOffset += _zIncrement;
-	} else {
-		m_zOffset -= _zIncrement;
+	if (_animationToggle == true) {
+		m_requestID = requestAnimFrame(tick);
 	}
 
-    if (m_zOffset > _zMax) {
+
+	// Throttle Animation
+	if (_fpsAnimation != _fpsDefault) {
+		m_fpsCurrentTime = performance.now();
+		m_fpsElapsedTime = m_fpsCurrentTime - m_fpsPreviousTime;
+		if (m_fpsElapsedTime < m_fpsInterval) {
+			return;
+		} else {
+			m_fpsPreviousTime = m_fpsCurrentTime - (m_fpsElapsedTime % m_fpsInterval);
+		}
+	}
+
+
+	// Z Direction Animation
+	if (m_zIncrementToggle == true) {
+		m_zOffsetCurrent += _zIncrement;
+	} else {
+		m_zOffsetCurrent -= _zIncrement;
+	}
+
+    if (m_zOffsetCurrent > _zMax) {
     	m_zIncrementToggle = false;
-    }
-    else if (m_zOffset < -_zMax) {
+    } else if (m_zOffsetCurrent < -_zMax) {
     	m_zIncrementToggle = true;
     }
 
-    if ((m_zOffset.toFixed(3) < _zIncrement.toFixed(3)) && (m_zOffset.toFixed(3) > -_zIncrement.toFixed(3))) {
+    if (Math.sign(m_zOffsetPrevious) != Math.sign(m_zOffsetCurrent)) {
     	if (m_zDirectionToggle == true) {
     		m_zDirection *= -1;
     		m_zDirectionToggle = false;
     	} else {
     		m_zDirectionToggle = true;
     	}
-    	m_dimStep += 1;
-    	if (m_dimStep >= 2) { m_dimStep = 2; }
-    	setDimensions();
+
+    	if (m_dimStepToggle == false) {
+    		m_dimStep += 1;
+    		if (m_dimStep >= 2) { m_dimStep = 2; }
+    		setDimensions();
+    	}
     }
+    m_zOffsetPrevious = m_zOffsetCurrent;
 
 
-    m_rotation = (m_rotation + (_rotationDirection * _rotationIncrement)) % 360;
-    if ((m_rotation.toFixed(3) < _rotationIncrement.toFixed(3)) && (m_rotation.toFixed(3) > -_rotationIncrement.toFixed(3))) {
-		_rotationDirection *= -1;
-    }
-
+    // Rotation Animation
+    m_rotation = m_rotation + (_rotationDirection * m_rotationIncrement);
+    if ((m_rotation >= 360.0) || (m_rotation <= 0.0)) {
+    	_rotationDirection *= -1;
+	}
 
 	if (m_alphaToggle == true) {
     	m_alphaCube += _alphaIncrement;
@@ -299,6 +372,8 @@ function tick() {
     	m_alphaCircle += _alphaIncrement;
     }
 
+
+    // Opacity Animation
     if (m_alphaCube >= _alphaEnd) {
     	m_alphaToggle = false;
     } else if (m_alphaCube <= _alphaStart) {
@@ -307,10 +382,6 @@ function tick() {
 
 
     redraw();
-
-	if (_toggleAnimation == true) {
-		m_requestID = requestAnimFrame(tick);
-	}
 }
 
 
@@ -325,10 +396,13 @@ window.requestAnimFrame = (function(callback) {
         	};
 })();
 
+
 window.cancelAnimationFrame = 	window.cancelAnimationFrame ||
         						window.mozCancelAnimationFrame || 
         						window.webkitCancelAnimationFrame ||
         						window.msCancelAnimationFrame;
+
+
 
 
 //--------------------------------------------------------------------
@@ -337,14 +411,17 @@ window.cancelAnimationFrame = 	window.cancelAnimationFrame ||
 
 function handleKeyUp(event) {
 
-	// alert(event.keyCode);
-
 	if (event.keyCode == 32) {
 		// Space Bar
-		_toggleAnimation = !_toggleAnimation;
-		if (_toggleAnimation) {
+		_animationToggle = !_animationToggle;
+		if (_animationToggle) {
 			tick();
 		}
+	}
+
+	if (event.keyCode == 27) {
+		// 'Esc'
+		toggleHelper();
 	}
 
 	if (event.keyCode == 88) {
@@ -362,55 +439,103 @@ function handleKeyUp(event) {
     	reset();
     }
 
-    if (event.keyCode == 38) {
-    	// Up Arrow Key
+    if (event.keyCode == 39) {
+    	// Right Arrow Key
+    	m_dimStepToggle = true;
     	m_dimStep = (m_dimStep + 1) % m_dimTotal;
     	setDimensions();
-    }
-
-    else if (event.keyCode == 40) {
-    	// Down Arrow Key
+    } else if (event.keyCode == 37) {
+    	// Left Arrow Key
+    	m_dimStepToggle = true;
     	m_dimStep = (m_dimStep - 1) % m_dimTotal;
     	if (m_dimStep < 0) { m_dimStep += m_dimTotal; }
     	setDimensions();
     }
 
 
-    if (event.keyCode == 37) {
-    	// Left Arrow Key
+    if (event.keyCode == 40) { // 40
+    	// Down Arrow Key
+    	_animationRate -= _animationRateIncrement;
+    	if (_animationRate < _animationRateMin) {
+    		_animationRate = _animationRateMin;
+    		flashBackground();
+    	}
+    	calculateParameters();
+
+    } else if (event.keyCode == 38) { // 38
+    	// Up Arrow Key
+    	_animationRate += _animationRateIncrement;
+    	if (_animationRate > _animationRateMax) {
+    		_animationRate = _animationRateMax;
+    		flashBackground();
+    	}
+    	calculateParameters();
     }
 
-    else if (event.keyCode == 39) {
-    	// Right Arrow Key
-    	tick();
+    if (event.keyCode == 191) {
+    	// '/' Key
+    	m_fpsCurrentRateIndex = (m_fpsCurrentRateIndex + 1) % _fpsRates.length;
+    	_fpsAnimation = _fpsRates[m_fpsCurrentRateIndex];
+    	calculateParameters();
     }
 
-
-    if (!_toggleAnimation) {
+    if (!_animationToggle) {
     	redraw();
     }
 }
 
 
+function mouseMove(event) {
+	m_mousePosition[0] = event.pageX;
+  	m_mousePosition[1] = event.pageY;
+}
+
+
+
+
+//--------------------------------------------------------------------
+// Helper Functions
+//--------------------------------------------------------------------
+
 function setDimensions() {
 	switch (m_dimStep) {
-		case 0:
-			m_nRows = 4;
-			m_nColumns = 4;
-			m_nPages = 1;
-			break;
-		case 1:
-			m_nRows = m_nColumns = 4;
-			m_nPages = 2;
-			break;
-		case 2:
-			m_nRows = m_nColumns = m_nPages = 4;
-			break;
+		case 0: m_nRows = 4; m_nColumns = 4; m_nPages = 1; break;
+		case 1: m_nRows = 4; m_nColumns = 4; m_nPages = 2; break;
+		case 2: m_nRows = 4; m_nColumns = 4; m_nPages = 4; break;
+		case 3: m_nRows = 1; m_nColumns = 1; m_nPages = 1; break;
+		case 4: m_nRows = 2; m_nColumns = 1; m_nPages = 1; break;
+		case 5: m_nRows = 2; m_nColumns = 2; m_nPages = 1; break;
+		case 6: m_nRows = 2; m_nColumns = 2; m_nPages = 2; break;
+		case 7: m_nRows = 4; m_nColumns = 2; m_nPages = 1; break;
 	}
 }
 
 
-function mouseMove(event) {
-	// m_mousePosition[0] = event.pageX;
-  	// m_mousePosition[1] = event.pageY;
+function toggleHelper() {
+	
+	var helperDiv  = document.getElementById("helper");
+	
+	if (m_helperToggle == true) {
+		helperDiv.style.visibility = 'hidden';
+		m_helperToggle = false;
+	} else {
+		helperDiv.style.visibility = 'visible';
+		m_helperToggle = true;
+	}
 }
+
+
+function flashBackground() {
+	var backgroundHighlight = document.getElementById("backgroundHighlight");
+	backgroundHighlight.style.visibility = 'visible';
+	window.setTimeout(function() {
+  		backgroundHighlight.style.visibility = 'hidden';
+	}, 10);
+}
+
+
+function roundDec(num, dec) {
+	var mult = Math.pow(10, dec);
+	return (Math.round(num * mult) / mult);
+}
+

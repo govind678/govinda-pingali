@@ -1,14 +1,27 @@
 <body onload="start();">
 
-	<canvas id="backgroundCanvas" style="position:absolute; left:0px; top:0px; background-color:#232323;"></canvas>
+	<canvas id="backgroundCanvas" class="canvases" style="background-color:#232323;"></canvas>
+	<canvas id="backgroundHighlight" class="canvases" style="background-color:#353535; visibility:hidden"></canvas>
 	<div id="footer">Govinda Ram Pingali - 2016</div>
-	<canvas id="cubeCanvas" style="position:absolute; left:0px; top:0px;"></canvas>
-	<canvas id="circleCanvas" style="position:absolute; left:0px; top:0px;"></canvas>
+	<canvas id="cubeCanvas" class="canvases"></canvas>
+	<canvas id="circleCanvas" class="canvases"></canvas>
 
+	<table id="helper" style="visibility:hidden">
+        <tr><td>Show/Hide Keyboard Commands</td><td>Esc</td></tr>
+        <tr><td>Start/Stop Animation</td><td>Space Bar</td></tr>
+        <tr><td>Reset Drawing</td><td>'c'</td></tr>
+        <tr><td>Toggle Rotation Direction</td><td>'x'</td></tr>
+        <tr><td>Toggle Perspective</td><td>'z'</td></tr>
+        <tr><td>Increment/Decrement Dimensions</td><td>Left/Right Arrow</td></tr>
+        <tr><td>Increase/Decrease Animation Rate</td><td>Up/Down Arrow</td></tr>
+        <tr><td>Cycle Animation Quality</td><td>'/'</td></tr>
+    </table>
+
+    <div id="escape">esc key</div>
 
 	<noscript>
 		<h2>This webpage delivers content through JavaScript, which is not enabled on your broswer.
-		</br>Please check your browser settings and reload the page.</h1>
+		</br>Please check your browser settings and reload the page.</h2>
 	</noscript>
 
 </body>
