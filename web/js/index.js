@@ -53,9 +53,13 @@ var m_nPages 					= 1;
 var m_helperDiv;
 var m_helperToggle 				= false;
 
-var m_requestID;
 var	m_mousePosition 			= [0.0, 0.0];
+var m_animationRequestID;
 
+var m_logEscKeyToggle			= false;
+var m_sessionStartTime			= 0.0;
+var m_isUpKeyDown				= false;
+var m_isDownKeyDown				= false;
 
 
 
@@ -64,20 +68,36 @@ var	m_mousePosition 			= [0.0, 0.0];
 //--------------------------------------------------------------------
 
 function start() {
+
+	// Get Start Time To Log Session Length
+	m_sessionStartTime = performance.now();
+
     initialize();
+}
+
+
+function end() {
+	var endTime = (performance.now() - m_sessionStartTime) / 1000.0;
+	ga('send', 'timing', 'session', 'session-length', endTime);
 }
 
 
 function initialize() {
 
+	initGoogleAnalytics();
+
    	// Window Resized Event Listener
    	window.addEventListener('resize', resized, false);
 
-   	// Keyboard Event Listener
+   	// Keyboard Event Listeners
+   	document.onkeydown = handleKeyDown;
    	document.onkeyup = handleKeyUp;
 
    	// Mousemove Event Listener
    	// this.addEventListener('mousemove', mouseMove);
+
+   	// Register Window Close
+ 	window.onbeforeunload = end;
 
    	// Set Window Size and Draw
    	resized();
@@ -89,7 +109,7 @@ function initialize() {
 
 function resized() {
 
-	window.cancelAnimationFrame(m_requestID);
+	window.cancelAnimationFrame(m_animationRequestID);
 
 	var backgroundCanvas = document.getElementById("backgroundCanvas");
 	backgroundCanvas.width = window.innerWidth; // 1440
@@ -150,7 +170,7 @@ function startAnimation() {
 
 function stopAnimation() {
 	_animationToggle = false;
-	window.cancelAnimationFrame(m_requestID);
+	window.cancelAnimationFrame(m_animationRequestID);
 }
 
 
@@ -312,7 +332,7 @@ function drawUnitCube(cubeCtx, circleCtx, xOrigin, yOrigin, size, offset, direct
 function tick() {
 
 	if (_animationToggle == true) {
-		m_requestID = requestAnimFrame(tick);
+		m_animationRequestID = requestAnimFrame(tick);
 	}
 
 
@@ -409,6 +429,21 @@ window.cancelAnimationFrame = 	window.cancelAnimationFrame ||
 // UI Events
 //--------------------------------------------------------------------
 
+function handleKeyDown(event) {
+	if (event.keyCode == 40) {
+		// Down Arrow Key
+		m_isDownKeyDown = true;
+		m_isUpKeyDown = false;
+		changeAnimationRate();
+	} else if (event.keyCode == 38) {
+		// Up Arrow Key
+		m_isDownKeyDown = false;
+		m_isUpKeyDown = true;
+		changeAnimationRate();
+	}
+}
+
+
 function handleKeyUp(event) {
 
 	if (event.keyCode == 32) {
@@ -422,6 +457,11 @@ function handleKeyUp(event) {
 	if (event.keyCode == 27) {
 		// 'Esc'
 		toggleHelper();
+
+		if (m_logEscKeyToggle == false) {
+			ga('send', 'event', 'keypress', 'launch-helper');
+			m_logEscKeyToggle = true;
+		}
 	}
 
 	if (event.keyCode == 88) {
@@ -455,21 +495,11 @@ function handleKeyUp(event) {
 
     if (event.keyCode == 40) { // 40
     	// Down Arrow Key
-    	_animationRate -= _animationRateIncrement;
-    	if (_animationRate < _animationRateMin) {
-    		_animationRate = _animationRateMin;
-    		flashBackground();
-    	}
-    	calculateParameters();
+    	m_isDownKeyDown = false;
 
     } else if (event.keyCode == 38) { // 38
     	// Up Arrow Key
-    	_animationRate += _animationRateIncrement;
-    	if (_animationRate > _animationRateMax) {
-    		_animationRate = _animationRateMax;
-    		flashBackground();
-    	}
-    	calculateParameters();
+    	m_isUpKeyDown = false;
     }
 
     if (event.keyCode == 191) {
@@ -534,8 +564,42 @@ function flashBackground() {
 }
 
 
+function changeAnimationRate() {
+	
+	if (m_isUpKeyDown == true) 
+	{
+		_animationRate += _animationRateIncrement;
+		if (_animationRate > _animationRateMax) {
+			_animationRate = _animationRateMax;
+			flashBackground();
+		}
+	} 
+
+	else if (m_isDownKeyDown == true) 
+	{
+		_animationRate -= _animationRateIncrement;
+		if (_animationRate < _animationRateMin) {
+			_animationRate = _animationRateMin;
+			flashBackground();
+		}
+	}
+
+	calculateParameters();
+}
+
+
 function roundDec(num, dec) {
 	var mult = Math.pow(10, dec);
 	return (Math.round(num * mult) / mult);
 }
 
+function initGoogleAnalytics() {
+	
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  	}) 	(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+	ga('create', 'UA-83877380-1', 'auto');
+  	ga('send', 'pageview');
+}
