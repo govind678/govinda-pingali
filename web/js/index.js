@@ -11,7 +11,7 @@ var _fpsAnimation 				= 60.0;	// Throttle if _fpsAnimation < _fpsDefault
 var _animationRateIncrement 	= 0.05;
 var _animationRateMax			= 1.2;
 var _animationRateMin 			= 0.05;
-var _animationRate 				= 0.05;
+var _animationRate 				= 0.1;
 
 var _squareSize 				= 128;
 var _zIncrement 				= 0.1;
@@ -130,7 +130,6 @@ function resized() {
 	m_fpsPreviousTime = performance.now();
 
 	calculateParameters();
- 	reset();
 
  	if (!_animationToggle) {
  		redraw();
@@ -602,4 +601,15 @@ function initGoogleAnalytics() {
 
 	ga('create', 'UA-83877380-1', 'auto');
   	ga('send', 'pageview');
+}
+
+
+function startAudioLoopPlayback() {
+	audio = new Audio('audio/DawnOutro.mp3'); 
+	audio.addEventListener('ended', function() {
+    	this.currentTime = 0;
+    	this.play();
+	}, false);
+	
+	audio.play();
 }
