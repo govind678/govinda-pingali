@@ -5,6 +5,11 @@ require('../vendor/autoload.php');
 $app = new Silex\Application();
 $app['debug'] = true;
 
+// Hack for preventing priting of stupid set_timezone warning message
+if ($app['debug'] == true) {
+	date_default_timezone_set('UTC');
+}
+
 // Register the monolog logging service
 $app->register(new Silex\Provider\MonologServiceProvider(), array(
   'monolog.logfile' => 'php://stderr',
