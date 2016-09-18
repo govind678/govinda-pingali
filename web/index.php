@@ -5,7 +5,7 @@ require('../vendor/autoload.php');
 $app = new Silex\Application();
 $app['debug'] = true;
 
-// Hack for preventing priting of stupid set_timezone warning message
+// Prevent priting of stupid set_timezone warning message
 if ($app['debug'] == true) {
 	date_default_timezone_set('UTC');
 }
